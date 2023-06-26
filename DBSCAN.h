@@ -11,6 +11,7 @@
 #define dbscan_h
 
 #include <Arduino.h>
+#include <vector>
 
 enum DISTANCE {
   EUCLIDIAN,  // euclidian distance
