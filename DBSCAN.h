@@ -52,9 +52,9 @@ class Dbscan
     void enlargeCluster(std::vector<uint16_t>, std::vector<uint16_t> &);
 
    public:
-    Dbscan(float, int, uint8_t, float = 1.0f);
+    Dbscan(void);
     ~Dbscan();
-    std::vector<std::vector<uint16_t>> init(std::vector<std::vector<float>> const &);
+    void Config(float, int, uint8_t, float = 1.0f);
     void displayStats();
     uint16_t predict(std::vector<float> const &);
 };

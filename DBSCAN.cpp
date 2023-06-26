@@ -1,21 +1,26 @@
 #include "DBSCAN.h"
 
 /* Constructor
+    Empty
+*/
+Dbscan::Dbscan() {}
+
+Dbscan::~Dbscan() {}
+
+/* Configuration
         Arguments :
                 epsilon : maximum distance between neighbours
                 minPts  : minimum number of points in a cluster
                 type    : the type of distance
                 mink    : the exponent in case of the Minkovski distance (optionnal)
 */
-Dbscan::Dbscan(float epsilon, int minPts, uint8_t distance, float mink)
+void Dbscan::Config(float epsilon, int minPts, uint8_t distance, float mink)
 {
     _epsilon = epsilon;
     _minPts = minPts;
     _distanceType = distance;
     _mink = mink;
 }
-
-Dbscan::~Dbscan() {}
 
 /* Process the dataset */
 std::vector<std::vector<uint16_t>> Dbscan::init(std::vector<std::vector<float>> const &dataset)
