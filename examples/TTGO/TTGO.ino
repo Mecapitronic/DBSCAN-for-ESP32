@@ -204,7 +204,7 @@ void loop() {
   delay(200);
 
   if (calc) {
-    dbscan DB(epsilon, 5, EUCLIDIAN);
+    Dbscan DB(epsilon, 5, EUCLIDIAN);
     prepareDataset (tol);
     std::vector<std::vector<uint16_t>> clusters;
     clusters = DB.init(Dataset);

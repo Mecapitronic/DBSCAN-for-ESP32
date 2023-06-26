@@ -7,7 +7,7 @@
                 type    : the type of distance
                 mink    : the exponent in case of the Minkovski distance (optionnal)
 */
-dbscan::dbscan(float epsilon, int minPts, uint8_t distance, float mink)
+Dbscan::Dbscan(float epsilon, int minPts, uint8_t distance, float mink)
 {
     _epsilon = epsilon;
     _minPts = minPts;
@@ -15,10 +15,10 @@ dbscan::dbscan(float epsilon, int minPts, uint8_t distance, float mink)
     _mink = mink;
 }
 
-dbscan::~dbscan() {}
+Dbscan::~Dbscan() {}
 
 /* Process the dataset */
-std::vector<std::vector<uint16_t>> dbscan::init(std::vector<std::vector<float>> const &dataset)
+std::vector<std::vector<uint16_t>> Dbscan::init(std::vector<std::vector<float>> const &dataset)
 {
     _nData = dataset.size();
     for (uint16_t i = 0; i < _nData; ++i)
@@ -70,7 +70,7 @@ std::vector<std::vector<uint16_t>> dbscan::init(std::vector<std::vector<float>> 
     return _clusters;
 }
 
-void dbscan::displayStats()
+void Dbscan::displayStats()
 {
     // Print statistics about the clusters
     uint16_t nFeatures = _dataset[_clusters[0][0]].size();
@@ -117,7 +117,7 @@ void dbscan::displayStats()
 }
 
 /* Compute the coordinates of the centroid of a cluster */
-std::vector<float> dbscan::computeCentroid(uint16_t nFeatures, std::vector<uint16_t> const &cluster)
+std::vector<float> Dbscan::computeCentroid(uint16_t nFeatures, std::vector<uint16_t> const &cluster)
 {
     std::vector<float> centroid(nFeatures, 0);
     for (uint16_t j = 0; j < cluster.size(); ++j)
@@ -131,7 +131,7 @@ std::vector<float> dbscan::computeCentroid(uint16_t nFeatures, std::vector<uint1
 }
 
 /* Compute the tightness of a cluster */
-float dbscan::computeTightness(uint16_t nFeatures, std::vector<uint16_t> const &cluster, std::vector<float> const &centroid)
+float Dbscan::computeTightness(uint16_t nFeatures, std::vector<uint16_t> const &cluster, std::vector<float> const &centroid)
 {
     float tightness = 0.0f;
     for (uint16_t j = 0; j < cluster.size(); ++j) tightness += distance(_dataset[cluster[j]], centroid) / cluster.size();
@@ -139,7 +139,7 @@ float dbscan::computeTightness(uint16_t nFeatures, std::vector<uint16_t> const &
 }
 
 /* Enlarge an existing cluster */
-void dbscan::enlargeCluster(std::vector<uint16_t> neighbours, std::vector<uint16_t> &currentCluster)
+void Dbscan::enlargeCluster(std::vector<uint16_t> neighbours, std::vector<uint16_t> &currentCluster)
 {
     uint16_t i = 0;
     while (i < neighbours.size())
@@ -182,7 +182,7 @@ void dbscan::enlargeCluster(std::vector<uint16_t> neighbours, std::vector<uint16
 }
 
 /* Find the neighbours of a point in the dataset */
-std::vector<uint16_t> dbscan::findNeighbours(uint16_t n)
+std::vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
 {
     std::vector<uint16_t> neighbours;
     for (uint16_t i = 0; i < _nData; ++i)
@@ -194,7 +194,7 @@ std::vector<uint16_t> dbscan::findNeighbours(uint16_t n)
 /*
         Compute the distance between 2 vectors
 */
-float dbscan::distance(std::vector<float> const &vector1, std::vector<float> const &vector2)
+float Dbscan::distance(std::vector<float> const &vector1, std::vector<float> const &vector2)
 {
     if (vector1.size() != vector2.size())
     {
@@ -228,7 +228,7 @@ float dbscan::distance(std::vector<float> const &vector1, std::vector<float> con
     return distance;
 }
 
-int dbscan::countNeighbours(std::vector<float> const &vector)
+int Dbscan::countNeighbours(std::vector<float> const &vector)
 {
     int neighbours = 0.0;
     for (uint8_t i = 0; i < _nData; ++i)
@@ -237,9 +237,9 @@ int dbscan::countNeighbours(std::vector<float> const &vector)
     return neighbours;
 }
 
-bool dbscan::isNeighbour(std::vector<float> const &vector1, std::vector<float> const &vector2) { return (distance(vector1, vector2) <= _epsilon); }
+bool Dbscan::isNeighbour(std::vector<float> const &vector1, std::vector<float> const &vector2) { return (distance(vector1, vector2) <= _epsilon); }
 
-uint16_t dbscan::predict(std::vector<float> const &vector)
+uint16_t Dbscan::predict(std::vector<float> const &vector)
 {
     uint16_t number = 65535;
     for (uint16_t i = 0; i < _nData; ++i)

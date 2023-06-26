@@ -58,9 +58,9 @@ void setup() {
   Serial.printf ("Set 3 size : %d\n", n3);
   Serial.printf ("Noise size : %d\n", n0);
 
-  // dbscan(epsilon, minPts, distance, mink)
+  // Dbscan(epsilon, minPts, distance, mink)
   Serial.println("\nEUCLIDIAN");
-  dbscan DB(.6, 4, EUCLIDIAN);
+  Dbscan DB(.6, 4, EUCLIDIAN);
   DB.init(V);
 
   // Prediction
@@ -80,16 +80,16 @@ void setup() {
   else Serial.printf("[3,5,7] in cluster %d\n", n);
 
   //  Serial.println("\nMINKOVSKI");
-  //  dbscan DB2(.2, 4, MINKOVSKI, .5);
+  //  Dbscan DB2(.2, 4, MINKOVSKI, .5);
   //  DB2.init(V);
   Serial.println("\nMANHATTAN");
-  dbscan DB3(.75, 4, MANHATTAN);
+  Dbscan DB3(.75, 4, MANHATTAN);
   DB3.init(V);
   Serial.println("\nCHEBYCHEV");
-  dbscan DB4(1.6, 4, CHEBYCHEV);
+  Dbscan DB4(1.6, 4, CHEBYCHEV);
   DB4.init(V);
   Serial.println("\nCANBERRA");
-  dbscan DB5(.1, 4, CANBERRA);
+  Dbscan DB5(.1, 4, CANBERRA);
   DB5.init(V);
 }
 

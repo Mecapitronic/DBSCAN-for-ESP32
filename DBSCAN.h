@@ -29,7 +29,7 @@ enum TYPE
     NOISE
 };
 
-class dbscan
+class Dbscan
 {
    private:
     float _epsilon = 2.0f;
@@ -52,8 +52,8 @@ class dbscan
     void enlargeCluster(std::vector<uint16_t>, std::vector<uint16_t> &);
 
    public:
-    dbscan(float, int, uint8_t, float = 1.0f);
-    ~dbscan();
+    Dbscan(float, int, uint8_t, float = 1.0f);
+    ~Dbscan();
     std::vector<std::vector<uint16_t>> init(std::vector<std::vector<float>> const &);
     void displayStats();
     uint16_t predict(std::vector<float> const &);
