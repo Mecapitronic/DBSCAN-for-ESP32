@@ -1,11 +1,14 @@
 #include "DBSCAN.h"
 
 /* Constructor
-    Empty
-*/
-Dbscan::Dbscan() {}
-
-Dbscan::~Dbscan() {}
+ */
+Dbscan::Dbscan()
+{
+    _epsilon = 0;
+    _minPts = 0;
+    _distanceType = 0;
+    _mink = 0;
+}
 
 /* Configuration
         Arguments :
@@ -20,38 +23,56 @@ void Dbscan::Config(float epsilon, int minPts, uint8_t distance, float mink)
     _minPts = minPts;
     _distanceType = distance;
     _mink = mink;
+
+    Serial.printf(" %f ", _epsilon);
+    Serial.printf(" %i ", _minPts);
+    Serial.printf(" %u ", _distanceType);
+    Serial.printf(" %f ", _mink);
+    Serial.println();
 }
 
 /* Process the dataset */
-std::vector<std::vector<uint16_t>> Dbscan::init(std::vector<std::vector<float>> const &dataset)
+vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset, uint16_t size)
 {
-    _nData = dataset.size();
+    _nData = size;
+
+    // Delete the array
+    delete[] _dataset;
+
+    // Resize the array
+    _dataset = new Point3DCluster[_nData];
+
+    // Fill the array
     for (uint16_t i = 0; i < _nData; ++i)
     {
-        _dataset.push_back(dataset[i]);
-        _type.push_back(NOT_VISITED);
+        _dataset[i].point.x = dataset[i].x;
+        _dataset[i].point.y = dataset[i].y;
+        _dataset[i].point.z = dataset[i].z;
+        //_dataset[i].point = dataset[i];
+        _dataset[i].type = NOT_VISITED;
+        _dataset[i].cluster = 0;
     }
 
     // Average distance
     float averageDistance = 0.0f;
     for (uint16_t i = 0; i < _nData; ++i)
-        for (uint16_t j = i + 1; j < _nData; ++j) averageDistance += distance(_dataset[i], _dataset[j]);
+        for (uint16_t j = i + 1; j < _nData; ++j) averageDistance += distance(_dataset[i].point, _dataset[j].point);
     averageDistance /= ((_nData - 1) * _nData / 2);
     Serial.printf("Average distance : %f\n", averageDistance);
 
     // Process dataset
-    std::vector<uint16_t> noise;
+    vector<uint16_t> noise;
     for (uint16_t i = 0; i < _nData; ++i)
     {
-        if (_type[i] == NOT_VISITED)
+        if (_dataset[i].type == NOT_VISITED)
         {
-            _type[i] = VISITED;
-            std::vector<uint16_t> currentCluster;
-            std::vector<uint16_t> neighbours = findNeighbours(i);
+            _dataset[i].type = VISITED;
+            vector<uint16_t> currentCluster;
+            vector<uint16_t> neighbours = findNeighbours(i);
             // If the point has too few neighbours : set to noise
             if (neighbours.size() < _minPts)
             {
-                _type[i] = NOISE;
+                _dataset[i].type = NOISE;
                 noise.push_back(i);
                 ++_nNoise;
                 // Serial.println ("Noise!");
@@ -62,7 +83,7 @@ std::vector<std::vector<uint16_t>> Dbscan::init(std::vector<std::vector<float>> 
                 currentCluster.push_back(i);
                 enlargeCluster(neighbours, currentCluster);
                 // Mark all points in the cluster as VISITED
-                for (uint16_t j = 0; j < currentCluster.size(); ++j) _type[currentCluster[j]] = VISITED;
+                for (uint16_t j = 0; j < currentCluster.size(); ++j) _dataset[currentCluster[j]].type = VISITED;
                 // Add current cluster to clusters list
                 _clusters.push_back(currentCluster);
                 ++_nClusters;
@@ -78,24 +99,26 @@ std::vector<std::vector<uint16_t>> Dbscan::init(std::vector<std::vector<float>> 
 void Dbscan::displayStats()
 {
     // Print statistics about the clusters
-    uint16_t nFeatures = _dataset[_clusters[0][0]].size();
-    std::vector<std::vector<float>> centroid;
-    std::vector<float> tightness;
+    vector<Point3D> centroid;
+    vector<float> tightness;
     Serial.printf("Created %d clusters.\n", _nClusters);
     for (uint16_t i = 0; i < _nClusters; ++i)
     {
         Serial.printf("Cluster %d : %d points\n", i, _clusters[i + 1].size() - 1);
 
         // Centroid
-        std::vector<float> c(nFeatures, 0);
-        c = computeCentroid(nFeatures, _clusters[i + 1]);
+        Point3D c;
+        c = computeCentroid(_clusters[i + 1]);
         Serial.print("\tCentroid: ");
-        for (uint16_t k = 0; k < nFeatures; ++k) Serial.printf("%f ", c[k]);
+        Serial.printf("%f ", c.x);
+        Serial.printf("%f ", c.y);
+        Serial.printf("%f ", c.z);
+
         Serial.println();
         centroid.push_back(c);
 
         // Tightness (mean distance to centroid)
-        float t = computeTightness(nFeatures, _clusters[i + 1], c);
+        float t = computeTightness(_clusters[i + 1], c);
         Serial.printf("\tTightness = %.3f\n", t);
         tightness.push_back(t);
     }
@@ -122,37 +145,36 @@ void Dbscan::displayStats()
 }
 
 /* Compute the coordinates of the centroid of a cluster */
-std::vector<float> Dbscan::computeCentroid(uint16_t nFeatures, std::vector<uint16_t> const &cluster)
+Dbscan::Point3D Dbscan::computeCentroid(vector<uint16_t> const &cluster)
 {
-    std::vector<float> centroid(nFeatures, 0);
+    Point3D centroid;
     for (uint16_t j = 0; j < cluster.size(); ++j)
     {
-        for (uint16_t k = 0; k < nFeatures; ++k)
-        {
-            centroid[k] += _dataset[cluster[j]][k] / cluster.size();
-        }
+        centroid.x += _dataset[cluster[j]].point.x / cluster.size();
+        centroid.y += _dataset[cluster[j]].point.y / cluster.size();
+        centroid.z += _dataset[cluster[j]].point.z / cluster.size();
     }
     return centroid;
 }
 
 /* Compute the tightness of a cluster */
-float Dbscan::computeTightness(uint16_t nFeatures, std::vector<uint16_t> const &cluster, std::vector<float> const &centroid)
+float Dbscan::computeTightness(vector<uint16_t> const &cluster, Point3D const &centroid)
 {
     float tightness = 0.0f;
-    for (uint16_t j = 0; j < cluster.size(); ++j) tightness += distance(_dataset[cluster[j]], centroid) / cluster.size();
+    for (uint16_t j = 0; j < cluster.size(); ++j) tightness += distance(_dataset[cluster[j]].point, centroid) / cluster.size();
     return tightness;
 }
 
 /* Enlarge an existing cluster */
-void Dbscan::enlargeCluster(std::vector<uint16_t> neighbours, std::vector<uint16_t> &currentCluster)
+void Dbscan::enlargeCluster(vector<uint16_t> neighbours, vector<uint16_t> &currentCluster)
 {
     uint16_t i = 0;
     while (i < neighbours.size())
     {
         uint16_t index = neighbours[i++];
-        if (_type[index] == NOT_VISITED)
+        if (_dataset[index].type == NOT_VISITED)
         {
-            std::vector<uint16_t> neighbours2 = findNeighbours(index);
+            vector<uint16_t> neighbours2 = findNeighbours(index);
             if (neighbours2.size() > _minPts)
             {
                 // make union of both neighbourhoods
@@ -187,9 +209,9 @@ void Dbscan::enlargeCluster(std::vector<uint16_t> neighbours, std::vector<uint16
 }
 
 /* Find the neighbours of a point in the dataset */
-std::vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
+vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
 {
-    std::vector<uint16_t> neighbours;
+    vector<uint16_t> neighbours;
     for (uint16_t i = 0; i < _nData; ++i)
         if (isNeighbour(_dataset[n], _dataset[i]))
             neighbours.push_back(i);
@@ -199,33 +221,29 @@ std::vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
 /*
         Compute the distance between 2 vectors
 */
-float Dbscan::distance(std::vector<float> const &vector1, std::vector<float> const &vector2)
+float Dbscan::distance(Point3D point1, Point3D point2)
 {
-    if (vector1.size() != vector2.size())
-    {
-        Serial.printf("Vector size problem ! (%d != %d)\n", vector1.size(), vector2.size());
-        return 1.0e10;
-    }
     float distance = 0.0f;
     switch (_distanceType)
     {
         case EUCLIDIAN:
-            for (uint8_t i = 0; i < vector1.size(); ++i) distance += pow(vector1[i] - vector2[i], 2);
+            distance = pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2) + pow(point1.z - point2.z, 2);
             distance = sqrt(distance);
             break;
-        case MINKOVSKI:
-            for (uint8_t i = 0; i < vector1.size(); ++i) distance += pow(abs(vector1[i] - vector2[i]), _mink);
-            distance = pow(distance, 1. / _mink);
-            break;
-        case MANHATTAN:
-            for (uint8_t i = 0; i < vector1.size(); ++i) distance += abs(vector1[i] - vector2[i]);
-            break;
-        case CHEBYCHEV:
-            for (uint8_t i = 0; i < vector1.size(); ++i) distance += max(distance, abs(vector1[i] - vector2[i]));
-            break;
-        case CANBERRA:
-            for (uint8_t i = 0; i < vector1.size(); ++i) distance += abs(vector1[i] - vector2[i]) / (abs(vector1[i]) + abs(vector2[i]));
-            break;
+            /* TODO im lazy ...
+         case MINKOVSKI:
+             for (uint8_t i = 0; i < vector1.size(); ++i) distance += pow(abs(vector1[i] - vector2[i]), _mink);
+             distance = pow(distance, 1. / _mink);
+             break;
+         case MANHATTAN:
+             for (uint8_t i = 0; i < vector1.size(); ++i) distance += abs(vector1[i] - vector2[i]);
+             break;
+         case CHEBYCHEV:
+             for (uint8_t i = 0; i < vector1.size(); ++i) distance += max(distance, abs(vector1[i] - vector2[i]));
+             break;
+         case CANBERRA:
+             for (uint8_t i = 0; i < vector1.size(); ++i) distance += abs(vector1[i] - vector2[i]) / (abs(vector1[i]) + abs(vector2[i]));
+             break;*/
         default:
             Serial.println("Distance type problem !");
             distance = 2.0e10;
@@ -233,25 +251,13 @@ float Dbscan::distance(std::vector<float> const &vector1, std::vector<float> con
     return distance;
 }
 
-int Dbscan::countNeighbours(std::vector<float> const &vector)
+int Dbscan::countNeighbours(Point3DCluster point1)
 {
     int neighbours = 0.0;
     for (uint8_t i = 0; i < _nData; ++i)
-        if (isNeighbour(vector, _dataset[i]))
+        if (isNeighbour(point1, _dataset[i]))
             ++neighbours;
     return neighbours;
 }
 
-bool Dbscan::isNeighbour(std::vector<float> const &vector1, std::vector<float> const &vector2) { return (distance(vector1, vector2) <= _epsilon); }
-
-uint16_t Dbscan::predict(std::vector<float> const &vector)
-{
-    uint16_t number = 65535;
-    for (uint16_t i = 0; i < _nData; ++i)
-        if (distance(vector, _dataset[i]) < _epsilon)
-            for (uint16_t j = 0; j < _nClusters; ++j)
-                for (uint16_t k = 0; k < _clusters[j + 1].size(); ++k)
-                    if (_clusters[j + 1][k] == i)
-                        return j;
-    return number;
-}
+bool Dbscan::isNeighbour(Point3DCluster point1, Point3DCluster point2) { return (distance(point1.point, point2.point) <= _epsilon); }
