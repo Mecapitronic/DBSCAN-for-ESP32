@@ -17,8 +17,18 @@ Dbscan::Dbscan()
                 type    : the type of distance
                 mink    : the exponent in case of the Minkovski distance (optionnal)
 */
-void Dbscan::Config(float epsilon, int minPts, uint8_t distance, float mink)
+void Dbscan::Config(uint16_t size, float epsilon, int minPts, uint8_t distance, float mink)
 {
+    _nData = size;
+
+    // Delete the array
+    delete[] _dataset;
+
+    // Resize the array
+    _dataset = new Point3DCluster[_nData];
+
+    Serial.printf(" %i ", _nData);
+
     _epsilon = epsilon;
     _minPts = minPts;
     _distanceType = distance;
@@ -32,16 +42,8 @@ void Dbscan::Config(float epsilon, int minPts, uint8_t distance, float mink)
 }
 
 /* Process the dataset */
-vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset, uint16_t size)
+vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset)
 {
-    _nData = size;
-
-    // Delete the array
-    delete[] _dataset;
-
-    // Resize the array
-    _dataset = new Point3DCluster[_nData];
-
     // Fill the array
     for (uint16_t i = 0; i < _nData; ++i)
     {

@@ -68,8 +68,8 @@ class Dbscan
 
    public:
     Dbscan(void);
-    void Config(float, int, uint8_t, float = 1.0f);
-    vector<vector<uint16_t>> Process(Point3D *, uint16_t size);
+    void Config(uint16_t, float, int, uint8_t, float = 1.0f);
+    vector<vector<uint16_t>> Process(Point3D *);
     void displayStats();
 };
 
