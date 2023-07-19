@@ -12,8 +12,8 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "Debugger.h"
-#include "A010.h"
+#include "..\..\include\Debugger.h"
+#include "..\..\include\A010.h"
 using namespace std;
 
 #define CLOUD_SIZE PICTURE_SIZE
@@ -69,7 +69,7 @@ class Dbscan
    private:
     Point4D computeCentroid(vector<uint16_t> const &);
     // vector<uint16_t> findNeighbours(uint16_t);
-    vector<uint16_t> findClosestNeighbours(uint16_t);
+    vector<uint16_t> findNeighbours(uint16_t);
     float computeTightness(vector<uint16_t> const &, Point4D const &);
     float getDistance(Point4D point1, Point4D point2, DISTANCE_TYPE = NONE);
     // int countNeighbours(ClusterPoint4D point1);

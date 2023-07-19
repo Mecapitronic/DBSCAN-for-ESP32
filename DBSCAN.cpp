@@ -6,7 +6,7 @@ Dbscan::Dbscan()
 {
     dbscanConfig.epsilon = 2.0f;
     dbscanConfig.minPts = 3;
-    dbscanConfig.distanceType = 0;
+    dbscanConfig.distanceType = NONE;
     dbscanConfig.mink = 1.0f;
 }
 
