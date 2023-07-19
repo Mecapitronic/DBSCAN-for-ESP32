@@ -46,8 +46,7 @@ void Dbscan::Config(uint16_t size, float epsilon, int minPts, DISTANCE_TYPE dist
 /* Process the dataset */
 vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset)
 {
-    // Fill the array
-    for (uint16_t i = 0; i < _nData; ++i)
+    for (uint16_t i = 0; i < _nData; i++)
     {
         _dataset[i].point.x = dataset[i].x;
         _dataset[i].point.y = dataset[i].y;
@@ -87,7 +86,7 @@ vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset)
                 currentCluster.push_back(i);
                 enlargeCluster(neighbours, currentCluster);
                 // Mark all points in the cluster as VISITED
-                for (uint16_t j = 0; j < currentCluster.size(); ++j) _dataset[currentCluster[j]].type = VISITED;
+                for (uint16_t j = 0; j < currentCluster.size(); j++) _dataset[currentCluster[j]].type = VISITED;
                 // Add current cluster to clusters list
                 _clusters.push_back(currentCluster);
                 ++_nClusters;
@@ -182,10 +181,10 @@ void Dbscan::enlargeCluster(vector<uint16_t> neighbours, vector<uint16_t> &curre
             if (neighbours2.size() > dbscanConfig.minPts)
             {
                 // make union of both neighbourhoods
-                for (uint16_t j = 0; j < neighbours2.size(); ++j)
+                for (uint16_t j = 0; j < neighbours2.size(); j++)
                 {
                     bool isInNeighbours = false;
-                    for (uint16_t k = 0; k < neighbours.size(); ++k)
+                    for (uint16_t k = 0; k < neighbours.size(); k++)
                     {
                         if (neighbours2[j] == neighbours[k])
                         {
@@ -200,8 +199,8 @@ void Dbscan::enlargeCluster(vector<uint16_t> neighbours, vector<uint16_t> &curre
         }
         // add current point to current cluster is not already part of a cluster
         bool isInCluster = false;
-        for (uint16_t j = 1; j < _nClusters; ++j)
-            for (uint16_t k = 0; k < _clusters[j].size(); ++k)
+        for (uint16_t j = 1; j < _nClusters; j++)
+            for (uint16_t k = 0; k < _clusters[j].size(); k++)
                 if (_clusters[j][k] == index)
                 {
                     isInCluster = true;
@@ -216,7 +215,7 @@ void Dbscan::enlargeCluster(vector<uint16_t> neighbours, vector<uint16_t> &curre
 vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
 {
     vector<uint16_t> neighbours;
-    for (uint16_t i = 0; i < _nData; ++i)
+    for (uint16_t i = 0; i < _nData; i++)
         if (isNeighbour(_dataset[n], _dataset[i]))
             neighbours.push_back(i);
     return neighbours;
@@ -261,7 +260,7 @@ float Dbscan::distance(Point3D point1, Point3D point2)
 int Dbscan::countNeighbours(Point3DCluster point1)
 {
     int neighbours = 0.0;
-    for (uint8_t i = 0; i < _nData; ++i)
+    for (uint16_t i = 0; i < _nData; i++)
         if (isNeighbour(point1, _dataset[i]))
             ++neighbours;
     return neighbours;
