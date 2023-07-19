@@ -4,22 +4,24 @@
  */
 Dbscan::Dbscan()
 {
-    _epsilon = 0;
-    _minPts = 0;
-    _distanceType = 0;
-    _mink = 0;
+    dbscanConfig.epsilon = 2.0f;
+    dbscanConfig.minPts = 3;
+    dbscanConfig.distanceType = 0;
+    dbscanConfig.mink = 1.0f;
 }
 
 /* Configuration
         Arguments :
+                size    : number of points in the cloud
                 epsilon : maximum distance between neighbours
                 minPts  : minimum number of points in a cluster
                 type    : the type of distance
                 mink    : the exponent in case of the Minkovski distance (optionnal)
 */
-void Dbscan::Config(uint16_t size, float epsilon, int minPts, uint8_t distance, float mink)
+void Dbscan::Config(uint16_t size, float epsilon, int minPts, DISTANCE_TYPE distanceType, float mink)
 {
     _nData = size;
+    _resolution = sqrt(size);
 
     // Delete the array
     delete[] _dataset;
@@ -29,15 +31,15 @@ void Dbscan::Config(uint16_t size, float epsilon, int minPts, uint8_t distance, 
 
     Serial.printf(" %i ", _nData);
 
-    _epsilon = epsilon;
-    _minPts = minPts;
-    _distanceType = distance;
-    _mink = mink;
+    dbscanConfig.epsilon = epsilon;
+    dbscanConfig.minPts = minPts;
+    dbscanConfig.distanceType = distanceType;
+    dbscanConfig.mink = mink;
 
-    Serial.printf(" %f ", _epsilon);
-    Serial.printf(" %i ", _minPts);
-    Serial.printf(" %u ", _distanceType);
-    Serial.printf(" %f ", _mink);
+    Serial.printf(" %f ", dbscanConfig.epsilon);
+    Serial.printf(" %i ", dbscanConfig.minPts);
+    Serial.printf(" %u ", dbscanConfig.distanceType);
+    Serial.printf(" %f ", dbscanConfig.mink);
     Serial.println();
 }
 
@@ -72,7 +74,7 @@ vector<vector<uint16_t>> Dbscan::Process(Point3D *dataset)
             vector<uint16_t> currentCluster;
             vector<uint16_t> neighbours = findNeighbours(i);
             // If the point has too few neighbours : set to noise
-            if (neighbours.size() < _minPts)
+            if (neighbours.size() < dbscanConfig.minPts)
             {
                 _dataset[i].type = NOISE;
                 noise.push_back(i);
@@ -177,7 +179,7 @@ void Dbscan::enlargeCluster(vector<uint16_t> neighbours, vector<uint16_t> &curre
         if (_dataset[index].type == NOT_VISITED)
         {
             vector<uint16_t> neighbours2 = findNeighbours(index);
-            if (neighbours2.size() > _minPts)
+            if (neighbours2.size() > dbscanConfig.minPts)
             {
                 // make union of both neighbourhoods
                 for (uint16_t j = 0; j < neighbours2.size(); ++j)
@@ -226,9 +228,9 @@ vector<uint16_t> Dbscan::findNeighbours(uint16_t n)
 float Dbscan::distance(Point3D point1, Point3D point2)
 {
     float distance = 0.0f;
-    switch (_distanceType)
+    switch (dbscanConfig.distanceType)
     {
-        case EUCLIDIAN:
+        case EUCLIDEAN:
             distance = pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2) + pow(point1.z - point2.z, 2);
             distance = sqrt(distance);
             break;
@@ -262,4 +264,4 @@ int Dbscan::countNeighbours(Point3DCluster point1)
     return neighbours;
 }
 
-bool Dbscan::isNeighbour(Point3DCluster point1, Point3DCluster point2) { return (distance(point1.point, point2.point) <= _epsilon); }
+bool Dbscan::isNeighbour(Point3DCluster point1, Point3DCluster point2) { return (distance(point1.point, point2.point) <= dbscanConfig.epsilon); }

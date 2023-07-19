@@ -14,13 +14,13 @@
 #include <vector>
 using namespace std;
 
-enum DISTANCE
+enum DISTANCE_TYPE
 {
-    EUCLIDIAN,  // euclidian distance
-    MINKOVSKI,  // Minkowski distance (is Euclidian if param = 2)
-    MANHATTAN,  // Manhattan distance
-    CHEBYCHEV,  // Chebychev distance
-    CANBERRA    // Canberra distance
+    EUCLIDEAN,   // Euclidean distance
+    MINKOWSKI,   // Minkowski distance (is Euclidean if param = 2)
+    MANHATTAN,   // Manhattan distance
+    TCHEBYCHEV,  // Tchebychev distance
+    CANBERRA     // Canberra distance
 };
 
 enum TYPE
@@ -47,10 +47,17 @@ class Dbscan
         uint8_t cluster;
     };
 
+    struct ConfigDbscan
+    {
+        float epsilon;
+        uint16_t minPts;
+        uint8_t distanceType;
+        float mink;
+    };
+
    private:
-    float _epsilon = 2.0f;
-    float _mink = 1.0f;
-    uint16_t _minPts;
+    ConfigDbscan dbscanConfig = {0.0, 0, 0, 0.0};
+
     uint16_t _nNoise = 0;
     uint8_t _distanceType = 0;
     uint16_t _nData = 0;
@@ -68,7 +75,7 @@ class Dbscan
 
    public:
     Dbscan(void);
-    void Config(uint16_t, float, int, uint8_t, float = 1.0f);
+    void Config(uint16_t, float, int, DISTANCE_TYPE, float = 1.0f);
     vector<vector<uint16_t>> Process(Point3D *);
     void displayStats();
 };
