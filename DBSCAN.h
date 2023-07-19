@@ -12,7 +12,12 @@
 
 #include <Arduino.h>
 #include <vector>
+#include "Debugger.h"
+#include "A010.h"
 using namespace std;
+
+#define CLOUD_SIZE PICTURE_SIZE
+#define CLOUD_WiDTH PICTURE_RES
 
 enum DISTANCE_TYPE
 {

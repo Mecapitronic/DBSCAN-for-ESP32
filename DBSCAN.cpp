@@ -12,24 +12,24 @@ Dbscan::Dbscan()
 
 /* Configuration
         Arguments :
-                size    : number of points in the cloud
                 epsilon : maximum distance between neighbours
                 minPts  : minimum number of points in a cluster
                 type    : the type of distance
-                mink    : the exponent in case of the Minkovski distance (optionnal)
+                mink    : the exponent in case of the Minkowski distance (optional)
 */
-void Dbscan::Config(uint16_t size, float epsilon, int minPts, DISTANCE_TYPE distanceType, float mink)
+void Dbscan::Config(float epsilon, int minPts, DISTANCE_TYPE distanceType, float mink)
 {
-    _nData = size;
-    _resolution = sqrt(size);
+    _nData = CLOUD_SIZE;
+    _resolution = CLOUD_WiDTH;
 
     // Delete the array
-    delete[] _dataset;
+    // delete[] _dataset;
 
     // Resize the array
-    _dataset = new Point3DCluster[_nData];
+    //_dataset = new ClusterPoint4D[_nData];
 
-    Serial.printf(" %i ", _nData);
+    Serial.printf(" Size %i ", _nData);
+    Serial.printf(" Res %i ", _resolution);
 
     dbscanConfig.epsilon = epsilon;
     dbscanConfig.minPts = minPts;
