@@ -21,14 +21,16 @@ using namespace std;
 
 enum DISTANCE_TYPE
 {
+    NONE,
     EUCLIDEAN,   // Euclidean distance
     MINKOWSKI,   // Minkowski distance (is Euclidean if param = 2)
     MANHATTAN,   // Manhattan distance
     TCHEBYCHEV,  // Tchebychev distance
-    CANBERRA     // Canberra distance
+    CANBERRA,    // Canberra distance
+    PROJECTION   // Projection on view axe
 };
 
-enum TYPE
+enum POINT_STATUS
 {
     NOT_VISITED,
     VISITED,
@@ -38,17 +40,10 @@ enum TYPE
 class Dbscan
 {
    public:
-    struct Point3D
+    struct ClusterPoint4D
     {
-        int16_t x;
-        int16_t y;
-        int16_t z;
-    };
-
-    struct Point3DCluster
-    {
-        Point3D point;
-        uint8_t type;
+        Point4D point;
+        POINT_STATUS type;
         uint8_t cluster;
     };
 
@@ -56,32 +51,35 @@ class Dbscan
     {
         float epsilon;
         uint16_t minPts;
-        uint8_t distanceType;
+        DISTANCE_TYPE distanceType;
         float mink;
     };
 
    private:
-    ConfigDbscan dbscanConfig = {0.0, 0, 0, 0.0};
+    ConfigDbscan dbscanConfig = {0.0, 0, NONE, 0.0};
+
+    uint16_t _nData = 0;
+    uint16_t _resolution = 0;
+    ClusterPoint4D _dataset[CLOUD_SIZE];
 
     uint16_t _nNoise = 0;
-    uint8_t _distanceType = 0;
-    uint16_t _nData = 0;
     uint16_t _nClusters = 0;
-    Point3DCluster *_dataset;
     vector<vector<uint16_t>> _clusters;
 
-    Dbscan::Point3D computeCentroid(vector<uint16_t> const &);
-    vector<uint16_t> findNeighbours(uint16_t);
-    float computeTightness(vector<uint16_t> const &, Point3D const &);
-    float distance(Point3D point1, Point3D point2);
-    int countNeighbours(Point3DCluster point1);
-    bool isNeighbour(Point3DCluster point1, Point3DCluster point2);
+   private:
+    Point4D computeCentroid(vector<uint16_t> const &);
+    // vector<uint16_t> findNeighbours(uint16_t);
+    vector<uint16_t> findClosestNeighbours(uint16_t);
+    float computeTightness(vector<uint16_t> const &, Point4D const &);
+    float getDistance(Point4D point1, Point4D point2, DISTANCE_TYPE = NONE);
+    // int countNeighbours(ClusterPoint4D point1);
+    bool isNeighbour(Point4D point1, Point4D point2);
     void enlargeCluster(vector<uint16_t>, vector<uint16_t> &);
 
    public:
     Dbscan(void);
-    void Config(uint16_t, float, int, DISTANCE_TYPE, float = 1.0f);
-    vector<vector<uint16_t>> Process(Point3D *);
+    void Config(float, int, DISTANCE_TYPE, float = 1.0f);
+    vector<vector<uint16_t>> Process(Point4D *);
     void displayStats();
 };
 
