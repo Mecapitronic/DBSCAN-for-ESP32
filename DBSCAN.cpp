@@ -234,6 +234,9 @@ float Dbscan::distance(Point3D point1, Point3D point2)
             distance = pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2) + pow(point1.z - point2.z, 2);
             distance = sqrt(distance);
             break;
+        case TCHEBYCHEV:  // maximum of differences of coordinates
+            distance = max(abs(point1.x - point2.x), max(abs(point1.y - point2.y), abs(point1.z - point2.z)));
+            break;
             /* TODO im lazy ...
          case MINKOVSKI:
              for (uint8_t i = 0; i < vector1.size(); ++i) distance += pow(abs(vector1[i] - vector2[i]), _mink);
