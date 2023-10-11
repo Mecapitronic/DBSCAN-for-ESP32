@@ -12,8 +12,11 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "..\..\include\Debugger.h"
+// #include "..\..\include\Debugger.h"
 #include "..\..\include\A010.h"
+#include "ESP32_Helper.h"
+//#include "A010.h"
+
 using namespace std;
 
 #define CLOUD_SIZE PICTURE_SIZE

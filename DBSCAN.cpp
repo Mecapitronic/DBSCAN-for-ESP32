@@ -51,7 +51,7 @@ vector<vector<uint16_t>> Dbscan::Process(Point4D *dataset)
         _dataset[i].point.x = dataset[i].x;
         _dataset[i].point.y = dataset[i].y;
         _dataset[i].point.z = dataset[i].z;
-        _dataset[i].point.d = dataset[i].d;
+        _dataset[i].point.w = dataset[i].w;
         _dataset[i].type = NOT_VISITED;
         _dataset[i].cluster = 0;
     }
@@ -158,7 +158,7 @@ Point4D Dbscan::computeCentroid(vector<uint16_t> const &cluster)
         centroid.x += _dataset[cluster[j]].point.x / cluster.size();
         centroid.y += _dataset[cluster[j]].point.y / cluster.size();
         centroid.z += _dataset[cluster[j]].point.z / cluster.size();
-        centroid.d += _dataset[cluster[j]].point.d / cluster.size();
+        centroid.w += _dataset[cluster[j]].point.w / cluster.size();
     }
     return centroid;
 }
@@ -257,7 +257,7 @@ vector<uint16_t> Dbscan::findNeighbours(uint16_t p)
         }
         if ((n > 0) && (n < _nData))
         {
-            if (abs(_dataset[p].point.d - _dataset[n].point.d) <= dbscanConfig.epsilon)
+            if (abs(_dataset[p].point.w - _dataset[n].point.w) <= dbscanConfig.epsilon)
                 neighbours.push_back(n);
         }
     }
@@ -294,7 +294,7 @@ float Dbscan::getDistance(Point4D point1, Point4D point2, DISTANCE_TYPE distance
              for (uint8_t i = 0; i < vector1.size(); ++i) distance += abs(vector1[i] - vector2[i]) / (abs(vector1[i]) + abs(vector2[i]));
              break;*/
         case PROJECTION:
-            distance = abs(point1.d - point2.d);
+            distance = abs(point1.w - point2.w);
             break;
         default:
             Serial.println("Distance type problem !");
